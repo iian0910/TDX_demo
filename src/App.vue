@@ -1,17 +1,49 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <h1>TDX 串接</h1>
+    <ul>
+      <li v-for="bus in data" :key="bus.PlateNumb">{{bus.SubRouteName.Zh_tw}}</li>
+    </ul>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import axios from 'axios'
+import { token } from '@/assets/js/common.js'
 export default {
   name: 'App',
-  components: {
-    HelloWorld
+  components: {},
+  data () {
+    return {
+      data: []
+    }
+  },
+  mounted () {
+    this.getApiResponse()
+  },
+  methods: {
+    async getApiResponse () {
+      let getDt = []
+      let accessTokenStr = await token.getToken()
+      const config = {
+        method: 'get',
+        url: `${process.env.VUE_APP_TDX_URL}v2/Bus/RealTimeByFrequency/Streaming/City/Hsinchu?%24top=30&%24format=JSON`,
+        headers: {
+          "authorization": "Bearer " + accessTokenStr,                
+        },
+      };
+
+      await axios(config)
+        .then(function (response) {
+          console.log('取得 data 成功', response.data);
+          getDt = response.data
+        })
+        .catch(function (error) {
+          console.error('getApiResponse 發生錯誤', error);
+        });
+
+      this.data = getDt
+    }
   }
 }
 </script>
@@ -24,5 +56,13 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+li {
+  text-align: left;
 }
 </style>
